@@ -167,6 +167,14 @@ static bool waitFriends(int id)
     }
 
     /* insert your code here */
+    sh->fSt.tableClients++;
+    if(sh->fSt.tableClients==1){
+        first=true;
+        sh->fSt.tableFirst=id;
+    }else if(sh->fSt.tableClients==TABLESIZE)
+        sh->fSt.tableLast=id;
+    sh->fSt.st.clientStat[id]= WAIT_FOR_FRIENDS;
+    saveState(nFic, &sh->fSt);
 
     if (semUp (semgid, sh->mutex) == -1)                                                      /* exit critical region */
     { perror ("error on the up operation for semaphore access (CT)");
@@ -174,6 +182,23 @@ static bool waitFriends(int id)
     }
 
     /* insert your code here */
+    if(sh->fSt.tableLast==id){
+        if (semUp (semgid, sh->friendsArrived) == -1){       // unblocks his friends
+            perror ("error on the up operation for semaphore access (CT)");
+            exit (EXIT_FAILURE);
+        }
+    }else{
+        if(semDown (semgid, sh->friendsArrived) == -1) {
+            perror ("error on the down operation for semaphore access (CT)");
+            exit (EXIT_FAILURE);
+        }
+        if (semUp (semgid, sh->friendsArrived) == -1){       // unblocks his friends
+            perror ("error on the up operation for semaphore access (CT)");
+            exit (EXIT_FAILURE);
+        }
+    }
+    
+
 
     return first;
 }
@@ -197,13 +222,21 @@ static void orderFood (int id)
     }
 
     /* insert your code here */
+    sh->fSt.st.clientStat[id] = FOOD_REQUEST;
+    sh->fSt.foodRequest=1;
 
     if (semUp (semgid, sh->mutex) == -1)                                                      /* exit critical region */
-    { perror ("error on the up operation for semaphore access (CT)");
+    { 
+        perror ("error on the up operation for semaphore access (CT)");
         exit (EXIT_FAILURE);
     }
 
     /* insert your code here */
+    if (semUp (semgid, sh->waiterRequest) == -1)                                             // desbloquear waiter
+    { 
+        perror ("error on the up operation for semaphore access (CT)");
+        exit (EXIT_FAILURE);
+    }
 }
 
 /**
