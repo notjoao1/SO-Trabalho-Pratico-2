@@ -116,20 +116,21 @@ int main (int argc, char *argv[])
 static void waitForOrder ()
 {
     /* insert your code here */
-    /* if (semDown (semgid, sh->waitOrder) == -1) {                                                      // bloqueia à espera da order
+
+    // o chefe bloqueia à espera de um pedido chegar pela parte do waiter
+    if (semDown (semgid, sh->waitOrder) == -1) {                                                    // bloqueia à espera da order
         perror ("error on the up operation for semaphore access (PT)");
         exit (EXIT_FAILURE);
-    } */
-
+    }
+    // assim que desbloqueia, entra no mutex onde muda o seu estado para cook.
     if (semDown (semgid, sh->mutex) == -1) {                                                      /* enter critical region */
         perror ("error on the up operation for semaphore access (PT)");
         exit (EXIT_FAILURE);
     }
 
     /* insert your code here */
-    /* sh->fSt.st.chefStat=COOK;
-    sh->fSt.foodReady=1; */
-    
+    sh->fSt.st.chefStat=COOK;
+    saveState(nFic, &sh->fSt);
 
     if (semUp (semgid, sh->mutex) == -1) {                                                      /* exit critical region */
         perror ("error on the up operation for semaphore access (PT)");
@@ -153,9 +154,10 @@ static void processOrder ()
     }
 
     /* insert your code here */
-    /* sh->fSt.st.chefStat = REST;
+    // depois de cozinhar, sinalizar que a comida está pronta e descansar.
+    sh->fSt.st.chefStat = REST;
     sh->fSt.foodReady = 1;
-    saveState(nFic, &sh->fSt); */
+    saveState(nFic, &sh->fSt);
     
     
 
@@ -165,9 +167,9 @@ static void processOrder ()
     }
 
     /* insert your code here */
-    /* if (semUp (semgid, sh->waiterRequest) == -1) {                                              // unlocks waiter - food is ready
+    if (semUp (semgid, sh->waiterRequest) == -1) {                                              // unlocks waiter - food is ready
         perror ("error on the up operation for semaphore access (PT)");
         exit (EXIT_FAILURE);
-    } */
+    }
 }
 
