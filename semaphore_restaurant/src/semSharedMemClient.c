@@ -185,17 +185,15 @@ static bool waitFriends(int id)
 
     /* insert your code here */
     if(sh->fSt.tableLast==id){
-        if (semUp (semgid, sh->friendsArrived) == -1){       // last unblocks other friend
-            perror ("error on the up operation for semaphore access (CT)");
-            exit (EXIT_FAILURE);
+        for (int i=0; i<TABLESIZE; i++){                                                     // desbloqueia os outros todos
+            if (semUp (semgid, sh->friendsArrived) == -1){
+                perror ("error on the up operation for semaphore access (CT)");
+                exit (EXIT_FAILURE);
+            }
         }
     }else{
         if(semDown (semgid, sh->friendsArrived) == -1) {
             perror ("error on the down operation for semaphore access (CT)");
-            exit (EXIT_FAILURE);
-        }
-        if (semUp (semgid, sh->friendsArrived) == -1){       // other friend unblocks other other friend
-            perror ("error on the up operation for semaphore access (CT)");
             exit (EXIT_FAILURE);
         }
     }
