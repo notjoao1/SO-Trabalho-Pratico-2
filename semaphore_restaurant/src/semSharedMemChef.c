@@ -116,7 +116,6 @@ int main (int argc, char *argv[])
 static void waitForOrder ()
 {
     /* insert your code here */
-
     // o chefe bloqueia à espera de um pedido chegar pela parte do waiter
     if (semDown (semgid, sh->waitOrder) == -1) {                                                    // bloqueia à espera da order
         perror ("error on the up operation for semaphore access (PT)");

@@ -185,7 +185,7 @@ static bool waitFriends(int id)
 
     /* insert your code here */
     if(sh->fSt.tableLast==id){
-        for (int i=1; i < TABLESIZE; i++){                                                  // desbloqueia os outros todos (TABLESIZE - 1 Clientes)
+        for (unsigned int i=1; i < TABLESIZE; i++){                                           // desbloqueia os outros todos (TABLESIZE - 1 Clientes)
             if (semUp (semgid, sh->friendsArrived) == -1){
                 perror ("error on the up operation for semaphore access (CT)");
                 exit (EXIT_FAILURE);
@@ -198,8 +198,6 @@ static bool waitFriends(int id)
         }
     }
     
-
-
     return first;
 }
 
@@ -246,7 +244,6 @@ static void orderFood (int id)
         exit (EXIT_FAILURE);
     }
     
-
 }
 
 /**
