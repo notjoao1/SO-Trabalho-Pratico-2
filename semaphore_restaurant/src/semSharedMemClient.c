@@ -326,14 +326,6 @@ static void waitAndPay (int id)
     // quem terminou de comer chega aqui
     sh->fSt.st.clientStat[id] = WAIT_FOR_OTHERS;
     sh->fSt.tableFinishEat++;
-    // o ultimo a acabar de comer 'avisa' (desbloqueia) os outros que já comeram todos
-    if (sh->fSt.tableFinishEat == sh->fSt.tableClients) {
-        // desbloquear os amigos que estão à espera que termine de comer 
-        if (semUp (semgid, sh->allFinished) == -1) {                                                  /* enter critical region */
-            perror ("error on the down operation for semaphore access (CT)");
-        exit (EXIT_FAILURE);
-    }
-    }
     saveState(nFic, &sh->fSt);
 
     if (semUp (semgid, sh->mutex) == -1) {                                                  /* enter critical region */
@@ -342,17 +334,20 @@ static void waitAndPay (int id)
     }
 
     /* insert your code here */
-    // bloquear até todos acabarem de comer
-    if (semDown (semgid, sh->allFinished) == -1) {                                                  /* enter critical region */
+    // o ultimo a acabar de comer 'avisa' (desbloqueia) os outros que já comeram todos
+    if (sh->fSt.tableFinishEat == sh->fSt.tableClients) {
+        // desbloquear os amigos que estão à espera que termine de comer 
+        for (unsigned int i=1; i < TABLESIZE; i++){                                           // desbloqueia os outros todos (TABLESIZE - 1 Clientes)
+            if (semUp (semgid, sh->allFinished) == -1){
+                perror ("error on the up operation for semaphore access (CT)");
+                exit (EXIT_FAILURE);
+            }
+        }
+    }else if (semDown (semgid, sh->allFinished) == -1) {                                      // bloquear até todos acabarem de comer
         perror ("error on the down operation for semaphore access (CT)");
         exit (EXIT_FAILURE);
     }
-
-    // desbloquear os restantes que acabaram de comer
-    if (semUp (semgid, sh->allFinished) == -1) {                                                  /* enter critical region */
-        perror ("error on the down operation for semaphore access (CT)");
-        exit (EXIT_FAILURE);
-    }
+    
 
     if(last) { 
         if (semDown (semgid, sh->mutex) == -1) {                                                  /* enter critical region */
