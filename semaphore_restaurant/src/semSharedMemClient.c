@@ -274,13 +274,8 @@ static void waitFood (int id)
     }
 
     /* insert your code here */
-    if (semDown (semgid, sh->foodArrived) == -1) {                                         // bloqueia à espera da comida
-        perror ("error on the down operation for semaphore access (CT)");
-        exit (EXIT_FAILURE);
-    }
-
-    // o primeiro a bloquear pela comida será desbloqueado pelo waiter, mas todos os outros terão de se desbloquear uns aos outros
-    if (semUp (semgid, sh->foodArrived) == -1) {                                         // bloqueia à espera da comida
+    // bloqueiam todos à espera pelo waiter/comida
+    if (semDown (semgid, sh->foodArrived) == -1) {
         perror ("error on the down operation for semaphore access (CT)");
         exit (EXIT_FAILURE);
     }

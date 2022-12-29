@@ -247,9 +247,12 @@ static void takeFoodToTable ()
     /* insert your code here */
     sh->fSt.st.waiterStat=TAKE_TO_TABLE;
     saveState(nFic, &sh->fSt);
-    if (semUp (semgid, sh->foodArrived) == -1)  {                                             // desbloqueia amigos para comer
-     perror ("error on the down operation for semaphore access (WT)");
-        exit (EXIT_FAILURE);
+    for(unsigned int i=0; i<TABLESIZE;i++){
+        if (semUp (semgid, sh->foodArrived) == -1)  {                  // desbloquear todos os amigos para comer
+            perror ("error on the down operation for semaphore access (WT)");
+            exit (EXIT_FAILURE);
+        }
+
     }
 
     
