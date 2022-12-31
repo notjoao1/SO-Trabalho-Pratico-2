@@ -15,10 +15,10 @@ OBJS = sharedMemory.o semaphore.o logging.o
 	client_bin waiter_bin chef_bin \
 	clean cleanall
 
-all:		client         waiter      chef       main clean
+all:		client         waiter      chef       main clean tester
 ct:			client         waiter_bin  chef_bin   main clean
 ct_wt:		client         waiter      chef_bin   main clean
-all_bin:	client_bin     waiter_bin  chef_bin   main clean
+all_bin:	client_bin     waiter_bin  chef_bin   main clean tester
 
 chef:	$(CHEF).o $(OBJS)
 	$(CC) -o ../run/$@ $^ -lm
@@ -47,3 +47,5 @@ clean:
 cleanall:	clean
 	rm -f ../run/$(MAIN) ../run/chef ../run/waiter ../run/client
 
+tester:
+	cc -Wall -O2 ./tester.c -o ../run/tester
