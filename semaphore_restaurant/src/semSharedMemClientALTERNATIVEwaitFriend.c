@@ -175,29 +175,30 @@ static bool waitFriends(int id)
     if(sh->fSt.tableClients<TABLESIZE){
         sh->fSt.st.clientStat[id]= WAIT_FOR_FRIENDS;
         saveState(nFic, &sh->fSt);
+        if (semUp (semgid, sh->mutex) == -1)                                                      /* exit critical region */
+        { perror ("error on the up operation for semaphore access (CT)");
+            exit (EXIT_FAILURE);
+        }
+
+        if(semDown (semgid, sh->friendsArrived) == -1) {
+            perror ("error on the down operation for semaphore access (CT)");
+            exit (EXIT_FAILURE);
+        }
     }else{
         sh->fSt.tableLast=id;
-        for (unsigned int i=0; i < TABLESIZE; i++){
-            // último desbloqueia os outros todos (TABLESIZE Clientes)
+        for (unsigned int i=1; i < TABLESIZE; i++){
+            // último desbloqueia os outros clientes (APENAS TABLESIZE-1 UP's)
             // No fim, semáforo fica a 1 não ficando preso no down em baixo                                           
             if (semUp (semgid, sh->friendsArrived) == -1){
                 perror ("error on the up operation for semaphore access (CT)");
                 exit (EXIT_FAILURE);
             }
         }
+        if (semUp (semgid, sh->mutex) == -1)                                                      /* exit critical region */
+        { perror ("error on the up operation for semaphore access (CT)");
+            exit (EXIT_FAILURE);
+        }
     }
-
-    if (semUp (semgid, sh->mutex) == -1)                                                      /* exit critical region */
-    { perror ("error on the up operation for semaphore access (CT)");
-        exit (EXIT_FAILURE);
-    }
-
-    /* insert your code here */
-    if(semDown (semgid, sh->friendsArrived) == -1) {
-        perror ("error on the down operation for semaphore access (CT)");
-        exit (EXIT_FAILURE);
-    }
-    
     return first;
 }
 
@@ -324,8 +325,8 @@ static void waitAndPay (int id)
     saveState(nFic, &sh->fSt);
     if (sh->fSt.tableFinishEat == sh->fSt.tableClients) {
         // desbloquear os amigos que estão à espera que termine de comer 
-        // aumentar semáforo 1 para não bloquear à frente
-        for (unsigned int i=0; i < TABLESIZE; i++){
+        // aumentar semáforo 1 para não bloquear
+        for (unsigned int i=0; i < TABLESIZE; i++){                                           // desbloqueia os outros todos (TABLESIZE Clientes)
             if (semUp (semgid, sh->allFinished) == -1){
                 perror ("error on the up operation for semaphore access (CT)");
                 exit (EXIT_FAILURE);
