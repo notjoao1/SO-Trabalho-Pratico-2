@@ -175,8 +175,17 @@ static bool waitFriends(int id)
     if(sh->fSt.tableClients<TABLESIZE){
         sh->fSt.st.clientStat[id]= WAIT_FOR_FRIENDS;
         saveState(nFic, &sh->fSt);
-    }else
+    }else{
         sh->fSt.tableLast=id;
+        for (unsigned int i=0; i < TABLESIZE; i++){
+            // último desbloqueia os outros todos (TABLESIZE Clientes)
+            // No fim, semáforo fica a 1 não ficando preso no down em baixo                                           
+            if (semUp (semgid, sh->friendsArrived) == -1){
+                perror ("error on the up operation for semaphore access (CT)");
+                exit (EXIT_FAILURE);
+            }
+        }
+    }
 
     if (semUp (semgid, sh->mutex) == -1)                                                      /* exit critical region */
     { perror ("error on the up operation for semaphore access (CT)");
@@ -184,18 +193,9 @@ static bool waitFriends(int id)
     }
 
     /* insert your code here */
-    if(sh->fSt.tableLast==id){
-        for (unsigned int i=1; i < TABLESIZE; i++){                                           // desbloqueia os outros todos (TABLESIZE - 1 Clientes)
-            if (semUp (semgid, sh->friendsArrived) == -1){
-                perror ("error on the up operation for semaphore access (CT)");
-                exit (EXIT_FAILURE);
-            }
-        }
-    }else{
-        if(semDown (semgid, sh->friendsArrived) == -1) {
-            perror ("error on the down operation for semaphore access (CT)");
-            exit (EXIT_FAILURE);
-        }
+    if(semDown (semgid, sh->friendsArrived) == -1) {
+        perror ("error on the down operation for semaphore access (CT)");
+        exit (EXIT_FAILURE);
     }
     
     return first;
